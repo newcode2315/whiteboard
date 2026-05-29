@@ -6,8 +6,8 @@ import io from "socket.io-client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const server = "https://whiteboard-1kvv.onrender.com";
-// const server = "http://localhost:8000";
+// const server = "https://whiteboard-1kvv.onrender.com";
+const server = "http://localhost:8000";
 const connectionOptions = {
   "force new connection": true,
   reconnectionAttempts: "Infinity",
