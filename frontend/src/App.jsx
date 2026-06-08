@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 const server = import.meta.env.VITE_BACKEND_URL || 
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8000"
-    : "https://whiteboard-1kvv.onrender.com");
+    : "https://whiteboard-1ui9.onrender.com");
 const connectionOptions = {
   "force new connection": true,
   reconnectionAttempts: "Infinity",
