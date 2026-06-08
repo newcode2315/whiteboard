@@ -14,17 +14,16 @@ const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log("Server is listening on port 3000");
+  console.log(`Server is listening on port ${PORT}`);
 });
 
-let roomIdGlobal, imgURLGlobal;
+const roomWhiteboardData = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected");
 
   socket.on("userJoined", (data) => {
     const { name, roomId, userId, host, presenter } = data;
-    roomIdGlobal = roomId;
     socket.join(roomId);
     const users = addUser({
       name,
@@ -38,16 +37,19 @@ io.on("connection", (socket) => {
     socket.emit("userIsJoined", { success: true, usersR });
     socket.broadcast.to(roomId).emit("userJoinedMessage", name);
     socket.broadcast.to(roomId).emit("allUsers", usersR);
-    socket.broadcast.to(roomId).emit("whiteBoardDataResponse", {
-      imgURL: imgURLGlobal,
+    socket.emit("whiteBoardDataResponse", {
+      imgURL: roomWhiteboardData[roomId] || null,
     });
   });
 
   socket.on("whiteBoardData", (data) => {
-    imgURLGlobal = data;
-    socket.broadcast.to(roomIdGlobal).emit("whiteBoardDataResponse", {
-      imgURL: data,
-    });
+    const user = getUser(socket.id);
+    if (user) {
+      roomWhiteboardData[user.roomId] = data;
+      socket.broadcast.to(user.roomId).emit("whiteBoardDataResponse", {
+        imgURL: data,
+      });
+    }
   });
 
   socket.on("message", (data) => {
@@ -55,7 +57,7 @@ io.on("connection", (socket) => {
     const user = getUser(socket.id);
     if (user) {
       socket.broadcast
-        .to(roomIdGlobal)
+        .to(user.roomId)
         .emit("messageResponse", { message, name: user.name });
     }
   });
@@ -67,6 +69,10 @@ io.on("connection", (socket) => {
       const usersR = getUsersInRoom(user.roomId);
       socket.broadcast.to(user.roomId).emit("allUsers", usersR);
       socket.broadcast.to(user.roomId).emit("userLeftMessage", user.name);
+
+      if (usersR.length === 0) {
+        delete roomWhiteboardData[user.roomId];
+      }
     }
   });
 });

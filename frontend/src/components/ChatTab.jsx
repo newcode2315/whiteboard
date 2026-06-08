@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
-const ChatTab = ({ setOpenedChatTab, socket }) => {
+const ChatTab = ({ socket }) => {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     const handleMessageResponse = (data) => {
@@ -16,60 +17,59 @@ const ChatTab = ({ setOpenedChatTab, socket }) => {
     };
   }, [socket]);
 
+  // Scroll to bottom whenever chat updates
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chat]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim() !== "") {
-      socket.emit("message", { message });
-      setChat((prevChats) => [...prevChats, { message, name: "You" }]);
+      socket.emit("message", { message: message.trim() });
+      setChat((prevChats) => [...prevChats, { message: message.trim(), name: "You" }]);
       setMessage("");
     }
   };
 
   return (
-    <div
-      className="position-fixed top-0 h-100 text-white bg-dark p-4"
-      style={{ width: "400px", height: "100%", left: "0%", zIndex: "2" }}
-    >
-      <button
-        type="button"
-        onClick={() => setOpenedChatTab(false)}
-        className="btn btn-light btn-block w-100 mt-5"
-      >
-        Close
-      </button>
-      <div
-        className="w-100 h-80 mt-5 p-2 border-1 border-white rounded-0"
-        style={{
-          border: "2px solid white",
-          height: "70%",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {chat.map((msg, index) => (
-          <div key={index*999} style={{ width: '100%', display: 'flex' }}>
-            <p className="text-center w-100">
-              {msg.name} : {msg.message}
-            </p>
-          </div>
-        ))}
+    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 100px)" }}>
+      {/* Chat Messages Area */}
+      <div className="chat-container">
+        {chat.map((msg, index) => {
+          const isMe = msg.name === "You";
+          return (
+            <div
+              key={index}
+              className={`chat-bubble ${isMe ? "me" : "other"}`}
+            >
+              {!isMe && <span className="chat-sender-name">{msg.name}</span>}
+              <div>{msg.message}</div>
+            </div>
+          );
+        })}
+        <div ref={messagesEndRef} />
       </div>
-      <form
-        onSubmit={handleSubmit}
-        className="w-100 h-80 mt-3 border-1 border-white rounded-0 d-flex align-items-center"
-        style={{ border: "2px solid white" }}
-      >
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Enter Message"
-          className="h-100 border-0 outline-0 text-white p-2"
-          style={{ width: "90%", background: "transparent", outline: "none" }}
-        />
-        <button type="submit" className="btn btn-light rounded-0">
-          Send
-        </button>
+
+      {/* Input Message Form */}
+      <form onSubmit={handleSubmit} className="mt-auto pt-2">
+        <div className="input-group">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="form-control-premium"
+            style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+            required
+          />
+          <button
+            type="submit"
+            className="btn btn-premium px-3"
+            style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+          >
+            Send
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -10,14 +10,19 @@ export const addUser = ({
   presenter,
   socketId,
 }) => {
+  const index = users.findIndex((user) => user.socketId === socketId);
   const user = { name, userId, roomId, host, presenter, socketId };
-  users.push(user);
+  if (index !== -1) {
+    users[index] = user;
+  } else {
+    users.push(user);
+  }
   return users;
 };
 
 export const removeUser = (id) => {
   const index = users.findIndex((user) => user.socketId === id);
-  if (index !== "-1") {
+  if (index !== -1) {
     return users.splice(index, 1)[0];
   }
   return users;

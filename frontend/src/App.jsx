@@ -83,7 +83,7 @@ const App = () => {
         />
         <Route
           path="/:roomId"
-          element={<ClientRoom user={user} socket={socket} users={users} setUsers={setUsers} />}
+          element={<ClientRoom user={user} setUser={setUser} socket={socket} users={users} setUsers={setUsers} />}
         />
       </Routes>
     </BrowserRouter>
